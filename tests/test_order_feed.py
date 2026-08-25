@@ -1,11 +1,14 @@
 import allure
 import pytest
+from data import CounterType
 
 @allure.epic('Тесты страницы Лента Заказов')
 class TestOrderFeed:
 
     @allure.title('При создании нового заказа счётчик за {counter_type} увеличивается')
-    @pytest.mark.parametrize('counter_type', ['все время', 'сегодня'])
+    @pytest.mark.parametrize('counter_type', [
+        CounterType.ALL_TIME, CounterType.TODAY
+        ])
     def test_create_order_boost_counters(self, _login_user, main_page, order_feed_page, counter_type):
         order_feed_page.open_order_feed()
         old_count = order_feed_page.get_count_order_by_type(counter_type)

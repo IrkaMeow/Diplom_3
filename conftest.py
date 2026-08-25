@@ -1,8 +1,7 @@
-import allure
 import pytest
-import requests
 import generators
-from data import Urls, Api
+from api_client import ApiClient
+from data import Urls
 from pages import MainPage, OrderFeedPage
 from locators import MainLocators as ML, LoginLocators as LL
 from selenium import webdriver
@@ -36,10 +35,15 @@ def order_feed_page(driver):
     return OrderFeedPage(driver)
 
 
+# объект для работы с api
+@pytest.fixture()
+def api():
+    return ApiClient()
+
 
 # регистрирует, логинит и удаляет пользователя
 @pytest.fixture
-def _login_user(driver, main_page):
+def _login_user(driver, main_page, api):
     email = generators.email_generator()
     password = generators.password_generator()
     name = generators.name_generator()
@@ -49,11 +53,10 @@ def _login_user(driver, main_page):
         'password': password,
         'name' : name
     }
-    with allure.step('Отправляем запрос на регистрацию пользователя'):
-        response = requests.post(Api.REGISTR_USER, json=payload)
+    response = api.create_user(payload)
     if response.status_code != 200:
-        raise RuntimeError(f'Регистрация не удалась. Код: {response.status_code}, ответ: {response.text}')
-    accessToken = response.json()['accessToken']
+        pytest.fail(f'Регистрация не удалась. Код: {response.status_code}, ответ: {response.text}')
+    token = response.json()['accessToken']
 
     driver.get(Urls.LOGIN_URL)
     WebDriverWait(driver, 5).until(EC.visibility_of_element_located(LL.EMAIL_INPUT)).send_keys(email)
@@ -64,5 +67,4 @@ def _login_user(driver, main_page):
 
     yield 
 
-    with allure.step('Отправляем запрос на удаление пользователя'):
-        requests.delete(Api.DATA_USER, headers={'Authorization': accessToken})
+    api.delete_user(token)

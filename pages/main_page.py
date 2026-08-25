@@ -34,7 +34,7 @@ class MainPage(BasePage):
     def click_ingredient(self, name):
         ingredient = self.find_clickable_element(ML.get_ingredient_by_name(name))
         # принудительный клик через JS
-        self.driver.execute_script("arguments[0].click();", ingredient)
+        self.forceful_click(ingredient)
         return self
     
     @allure.step('Добавляем ингредиент {name} в заказ')

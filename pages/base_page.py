@@ -75,6 +75,10 @@ class BasePage:
             }
             
             source.dispatchEvent(createEvent('dragstart'));
+            var start = Date.now();
+            while (Date.now() - start < 150) {
+                // Пустой цикл удерживает выполнение 
+            }
             target.dispatchEvent(createEvent('drop'));
         """
         self.driver.execute_script(js_script, source_element, target_element)
@@ -91,3 +95,7 @@ class BasePage:
             self.driver.execute_script(js_hide_overlays)
         except Exception:
             pass
+
+    @allure.step('Принудительный клик')
+    def forceful_click(self, element):
+        self.driver.execute_script("arguments[0].click();", element)
